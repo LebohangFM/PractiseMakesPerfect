@@ -1,0 +1,278 @@
+#copied foward bam file for D29CD34S1_s11 including bam index
+
+cp D29spaceCD34spaceS1_S11_hg38_forward_m.bam.bai /project/Wellcome_Discovery/lebohang/TT_coding/
+
+cp D29spaceCD34spaceS1_S11_hg38_forward_m.bam /project/Wellcome_Discovery/lebohang/TT_coding/
+
+#sorted file and renamed
+
+samtools sort D29spaceCD34spaceS1_S11_hg38_forward_m.bam D29_sorted.bam
+
+#filtered chr16 into new folder + file 
+
+samtools view D29spaceCD34spaceS1_S11_hg38_forward_m.bam 'chr16' -o D29_chr16.bam
+
+#tried to isolate polyA site from fragment, did not work as thats not how it works, have to isolate the sites from BED file which has anottations
+
+samtools view D29_chr16.bam 'AAUAAA' -o D29_chr16_pA.bam
+
+#isolating polyA site should be done on bed file not Bam as bam is alignment of fragments, Bed is biological annotations IE exons, polyA sites  etc. 
+
+#realised cant be done, so I created a second attempt folder (Attempt2) and coppied contents 07. Idices file from results. Only copied bam and bam index file with full fragments, not foward/reverse only
+
+cp D29spaceCD34spaceS1_S11_hg38.bam /project/Wellcome_Discovery/lebohang/TT_coding/
+
+cp D29spaceCD34spaceS1_S11_hg38.bam.bai /project/Wellcome_Discovery/lebohang/TT_coding/
+
+#Then isolated chromosome 16 fragments into new file and sorted it. Received many non-paired errors and due to whole file having chimeric reads, there are mismatched reads
+
+samtools view D29spaceCD34spaceS1_S11_hg38.bam 'chr16' -o D29_chr16.bam
+
+samtools sort -n D29_chr16.bam -o D29_chr16_sorted.bam
+
+bedtools bamtobed -i D29_chr16_sorted.bam -bedpe -o D29_chr16.bedpe
+
+Error: *****WARNING: Query NB501183:1338:H2V2NBGYX:2:22109:26620:10473 is marked as paired, but its mate does not occur next to it in your BAM file.  Skipping.
+
+#Commands file to be save in Git in Attempt1 folder, but will save it under TT_coding folder to reduce many files being created.
+
+#Attempt 3 will aim to isolate chromosome 16 only after sorting fragments, so that I can proceed successfully with Bedtools and not have missing fragments error.
+
+#Attempt 3: copied D29 paired files, first sorted the files my name and tried to index (because I index every new bam file created for computer fluidity, calculations sake). 
+
+cp /project/Wellcome_Discovery/lebohang/03_Analysis/1_27_May_2025/2025-05-29_D29PBMC_D29CD34_NCO38_FreshPBMC/results/07_indices/D29spaceCD34spaceS1_S11_hg38.bam* .
+
+samtools sort -n D29spaceCD34spaceS1_S11_hg38.bam -o D29_chr16_sorted.ba
+
+mv D29_chr16_sorted.bam D29_CD34_sorted.bam #renamed as didnt isolate chr16 yet
+
+samtools index D29_CD34_sorted.bam -o D29_CD34_sorted.bam.bai 
+
+Error message: [E::hts_idx_push] Chromosome blocks not continuous
+[E::sam_index] Read 'NB501183:1338:H2V2NBGYX:1:11101:1060:5068' with ref_name='chr16', ref_length=90338345, flags=329, pos=89480261 cannot be indexed
+samtools index: failed to create index for "D29_CD34_sorted.bam": No such file or directory
+
+#Attempting 4th time, will sort without the "-n" option this time
+
+#Sorted entire BAM first, indexed then isolated chr16. When converting bam to bed, led to same error message as before because sorting needs to be by name (-n) not coordinate
+
+cp D29spaceCD34spaceS1_S11_hg38.bam /project/Wellcome_Discovery/lebohang/TT_coding/
+
+cp D29spaceCD34spaceS1_S11_hg38.bam.bai /project/Wellcome_Discovery/lebohang/TT_coding/
+
+samtools sort D29spaceCD34spaceS1_S11_hg38.bam -o D29_CD34_sorted.bam
+
+samtools view D29_CD34_sorted.bam 'chr16' -o D29_chr16.bam
+
+bedtools bamtobed -i D29_chr16_sorted.bam -bedpe -o D29_chr16.bedpe
+
+Error: *****WARNING: Query NB501183:1338:H2V2NBGYX:2:22109:26620:10473 is marked as paired, but its mate does not occur next to it in your BAM file.  Skipping.
+
+#For the sake of space and time, will copy from TT_coding instead, or make alias for original bam file, maybe a soft link 
+
+#made symbloic soft link to D29.bam file and index and stored under TT_coding, so will always refer to there instead. 
+
+ln -s /project/Wellcome_Discovery/lebohang/03_Analysis/1_27_May_2025/2025-05-29_D29PBMC_D29CD34_NCO38_FreshPBMC/results/07_indices/D29spaceCD34spaceS1_S11_hg38.bam D29CD34.bam
+
+ln -s /project/Wellcome_Discovery/lebohang/03_Analysis/1_27_May_2025/2025-05-29_D29PBMC_D29CD34_NCO38_FreshPBMC/results/07_indices/D29spaceCD34spaceS1_S11_hg38.bam.bai D29CD34.bam.bai
+
+
+#Need to have indexed file and bam file together always, when sending new bam file output to different directory, make sure they are both there.
+
+#Attempt 5, sorting entire bam file from symbolic link
+
+samtools sort -n ../D29CD34.bam -o D29CD34_sorted.bam
+
+bedtools bamtobed -bedpe -i D29CD34_sorted.bam > D29CD34.bedpe 
+
+#this time, used the bedtools code, and ignored the warning error. apparently is normal. will continue working with the bedpe file produced. 
+
+#downloaded IGV to get initial viewing of my reads, then will look for ways to analyse data
+
+#successfully did so but will isolate polyA tail trying both with Samtools and bedtools. I will start by flanking 3' ends and  bedtools fasta to get the sequences from those regions, then grep polya tail signal sequences
+
+#copied file from ensable (2025-07-07 11:04 841M), also copied file to macbook folder in following location: ~/Desktop/ccb
+
+wget ftp://ftp.ensembl.org/pub/current/fasta/homo_sapiens/dna/Homo_sapiens.GRCh38.dna.primary_assembly.fa.gz
+
+wget ftp://ftp.ensembl.org/pub/current/fasta/homo_sapiens/dna/CHECKSUMS
+
+sum Homo_sapiens.GRCh38.dna.primary_assembly.fa.gz
+
+cat CHECKSUMS
+
+sum Homo_sapiens.GRCh38.dna.primary_assembly.fa.gz
+
+#creating genome size file for flank code
+
+gunzip Homo_sapiens.GRCh38.dna.primary_assembly.fa.gz
+
+samtools faidx Homo_sapiens.GRCh38.dna.primary_assembly.fa
+
+cut -f1,2 Homo_sapiens.GRCh38.dna.primary_assembly.fa.fai > Homo_sapiens.GRCh38.dna.primary_assembly.fa.sizes
+
+#used bedtools slop t flank 3' ends of reads. 
+
+bedtools slop -i D29CD34.bedpe -g Homo_sapiens.GRCh38.dna.primary_assembly.fa.sizes -s -l 500 -r 500 > D29CD34.3prime_flank.bedpe
+
+Error: * Input error: Chromosome chr11 doesn't present in the .genome file. *
+
+#error because the chr names are mismatched. Added 'chr' in front of all chromosome numbers to match format, and printed first 25 lines to a new file
+
+awk 'BEGIN{OFS="\t"}{c=$1; if(c=="MT") c="chrM"; else if(c !~ /^chr/) c="chr"c; print c,$2}' Homo_sapiens.GRCh38.dna.primary_assembly.fa.sizes > genome.chr.size
+
+* Input error: Chromosome chr22_KI270733v1_random doesn't present in the .genome file. *
+
+
+head -n 25 genome.chr.size > genome.chr.size.tmp && mv genome.chr.size.tmp genome.chr.size
+
+error: * Input error: Chromosome chr22_KI270733v1_random doesn't present in the .genome file. *
+
+#so confused. Might have to start from scratch. Attempt 6. This time, I will move all foundation files to TT_coding to avoid wasting time and recreating files. Might consider redoing genome.sizes file though.
+
+
+samtools sort -n ../D29CD34.bam -o D29CD34_sort.bam
+
+bedtools bamtobed -bedpe -i D29CD34_sort.bam > D29CD34.bedpe 
+
+mv Homo_sapiens.GRCh38.dna.primary_assembly.fa ../ .
+
+mv Homo_sapiens.GRCh38.dna.primary_assembly.fa.fai ../ .
+
+mv genome.chr.size ../ .
+
+mv D29CD34.bedpe ../ .
+
+#remade genome file using bam file and created file with flanked 3' ends (still have to understand "-l" and "-r" options to manipulate in my interest)
+
+samtools idxstats ../D29CD34.bam | cut -f1,2 > ../Attempt6/genome_size.txt
+
+bedtools slop -i ../D29CD34.bedpe -g genome_size.txt -s -l 0 -r 100 > ../Attempt6/D29CD34.3prime_flank.bedpe
+
+#The average UTR bp length ranges from 100bp - 10,000bp due to evolution, so might have to change '-l' and '-r' options. Will do it on the next round of processing
+
+#I will possibly filter chr16 into a new file and remove all reads with MAPQ of 255. This will be done in a new folder so that I can go back to original file if anything goes wrong as opposed to recreating file over and over
+
+
+
+#Now I will create a window by filtering 3' ends flanked around the poly A signal sequence only in the UTR region into a new file
+
+#I didnt create a window. I'll just visualise bed file through UCSC before converting my bed file to bigwig.
+
+#before doing all that, I want to use LanceOtron to create tracks with peaks using 3 prime ends as a sample. I need bigwig files to put through lanceotron, so I will try converting bedfiles to bigwigs. 
+
+#possible thought process: I will intersect my bam file with my bed file and convert the bam to bigwig to upload to lanceotron, tabs already opened
+
+#Attepmt 7 file created. New 3 prime flanked file created with 10bp on each side and bedpe file converted to bed file with 3 prime positions in 1bp
+
+
+awk 'BEGIN{OFS="\t"}{ if($9=="+") p1=$3-1; else p1=$2; print $1,p1,p1+1,$7"/1",1,$9; if($10=="+") p2=$6-1; else p2=$5; print $4,p2,p2+1,$7"/2",1,$10 }' ../D29CD34.bedpe > ends3p.1bp.bed
+
+bedtools slop -i ../D29CD34.bedpe -g ../Attempt6/genome_size.txt -s -l 10 -r 10 > ../Attempt7/D29CD34.3prime_flank.bedpe #Didnt need to do this, but will just keep it in file
+
+#will convert to bedgraph, then bigwig to view as a track on UCSC
+
+#Encountered error cause had issue with genome sizes file, fixed it and needed to sort the 3 prime bed file in order to successfully convert to bedgraphg (bg)
+
+bedtools genomecov -bg -i ends3p.1bp.bed -g ../Attempt6/genome_size.txt > ends3p.bg
+
+Error: * has length equal to 0. Each chromosome must have non-zero length. Exiting.
+
+grep -n $'^\*\t' ../Attempt6/genome_size.txt
+
+awk '$2==0{print NR,$0}' ../Attempt6/genome_size.txt | head
+
+awk 'BEGIN{OFS="\t"} $1!="*" && $2>0 {print $1,$2}' ../Attempt6/genome_size.txt > ../Attempt7/genome_size.txt 
+
+awk 'BEGIN{OFS="\t"} $1!="*"{print}' ends3p.1bp.bed > ends3p.1bp.clean.bed  #Made sure both genome size and bed file had no '*' in them
+
+mv ends3p.1bp.clean.bed ends3p.1bp.bed
+
+bedtools genomecov -bg -i ends3p.1bp.bed -g genome_size.txt > ends3p.bg 
+
+Input error: Chromosome chr16 found in non-sequential lines. This suggests that the input file is not sorted correctly. 
+
+#Needed to sort first before converting. Always check if you need to sort by query or coordinate when performing any code.
+
+cut -f1 ends3p.1bp.bed | sort -u | head
+
+
+(chr1
+chr10
+chr11
+chr11_KI270721v1_random
+chr12
+chr13
+chr14
+chr14_GL000009v2_random
+chr14_GL000194v1_random
+chr14_GL000225v1_random)
+
+#Not sure what this means, but will continue anyways
+
+
+#Didn't allow, still showed same error as before, cause the 'cut...sort' code does not actually sort the bed file. Had to properly sort the file by the following.
+
+bedtools sort -i ends3p.1bp.bed -g genome_size.txt > ends3p.1bp.sorted.bed
+
+bedtools genomecov -bg -i ends3p.1bp.sorted.bed -g genome_size.txt > ends3p.bg
+
+#bedgraphtobigwig has to be installed and because Its not safe to install anything on the cluster, I'm planning on installing mamba through miniforge and creating my own environment. or I can just use the already installed conda and make an environment through that. 
+
+#conda already installed, so created environment under conda, made slurm script, ran slurm
+
+conda create -n bedgraphtobigwig #prompted to proceed, selected yes, but didnt update conda
+
+conda activate bedgraphtobigwig
+
+conda install bioconda::ucsc-bedgraphtobigwig
+
+touch bigwig.sh
+
+#!/bin//bash
+#SBATCH --partition=short
+#SBATCH --job-name=bedgraphtobigwig
+#SBATCH --ntasks=2
+#SBATCH --mem=32G
+#SBATCH --mail-user=LEBOHANG.MOSHANYANA@NDCLS.OX.AC.UK
+#SBATCH --time=00-12:00:00
+#SBATCH --output=%j_%x.out
+#SBATCH --error=%j_%x.err
+
+
+module load conda
+source /home/l/lebohang/miniconda3/envs/bedgraphtobigwig
+conda activate bedgraphtobigwig
+
+bedGraphToBigWig ends3p.sorted.bg genome_sizes.txt ends3p.bw
+
+sbatch bigwig.sh
+
+#Made a new attemp, Attempt8, this time using python script to do the actual code
+
+touch chrscript.py
+
+#All coding and explanation will be made in the python script
+
+
++------------------------+-----------+-----------+-------+
+| Chromosome             | Start     | End       | +7    |
+| (category)             | (int32)   | (int32)   | ...   |
+|------------------------+-----------+-----------+-------|
+| chr1                   | 28714092  | 28714242  | ...   |
+| chr1                   | 54388670  | 54388820  | ...   |
+| chr1                   | 29082403  | 29082553  | ...   |
+| chr1                   | 158617959 | 158618109 | ...   |
+| ...                    | ...       | ...       | ...   |
+| chrY                   | 25487822  | 25487972  | ...   |
+| chrY                   | 10221090  | 10221192  | ...   |
+| chrY                   | 5236442   | 5236591   | ...   |
+| chrY                   | 24148607  | 24148756  | ...   |
+| chrY_KI270740v1_random | 5561      | 5709      | ...   |
+| chrY_KI270740v1_random | 4560      | 4708      | ...   |
+| chrY_KI270740v1_random | 8660      | 8810      | ...   |
++------------------------+-----------+-----------+-------+
+Unstranded PyRanges object has 14,775,788 rows and 10 columns from 114 chromosomes.
+For printing, the PyRanges was sorted on Chromosome.
+Considered unstranded due to these Strand values: '144033978', ... (+ 11213094 more.)
+7 hidden columns: Name, Score, Strand, ThickStart, ThickEnd, ... (+ 2 more.)
